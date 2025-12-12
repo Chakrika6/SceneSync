@@ -1,99 +1,83 @@
-const pool = require('../db');
+// server/controllers/submissionController.js
+const db = require('../db');
 const { analyzeImage } = require('../utils/vision');
+const { uploadToCloudinary } = require('../utils/cloudinary');
 const exifr = require('exifr');
-const { io } = require('../index');
-const cloudinary = require('cloudinary').v2;
-require('dotenv').config();
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-const create = async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    const userId = req.body.user_id || 1; // Mock user_id for now
-
-    // Extract GPS from image buffer
-    let lat = null;
-    let lng = null;
+// -----------------------------------------------------
+// 1. POST /api/submissions/upload (The Pipeline)
+// -----------------------------------------------------
+exports.createSubmission = async (req, res) => {
     try {
-      const exifData = await exifr.parse(req.file.buffer);
-      if (exifData?.latitude && exifData?.longitude) {
-        lat = exifData.latitude;
-        lng = exifData.longitude;
-      }
-    } catch (err) {
-      console.log('EXIF extraction error:', err.message);
-    }
+        if (!req.file) {
+            return res.status(400).json({ error: "No image uploaded" });
+        }
 
-    // Analyze image with Vision API
-    const visionResult = await analyzeImage(req.file.buffer);
-    const aiScore = visionResult.aiScore;
+        const fileBuffer = req.file.buffer;
 
-    // Upload to Cloudinary
-    let imageUrl = null;
-    try {
-      const uploadStream = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { resource_type: 'auto' },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          }
+        // GPS Extraction
+        let lat = null, lng = null;
+        try {
+            const gpsData = await exifr.gps(fileBuffer);
+            if (gpsData) {
+                lat = gpsData.latitude;
+                lng = gpsData.longitude;
+            }
+        } catch (e) { /* silent fail on GPS extraction */ }
+
+        // AI Verification (Currently Mocked)
+        const { aiScore } = await analyzeImage(fileBuffer);
+
+        // Cloudinary Upload
+        const cloudinaryUrl = await uploadToCloudinary(fileBuffer);
+
+        // Save to Supabase
+        const newSubmission = await db.query(
+            `INSERT INTO submissions (image_url, ai_score, lat, lng, status) 
+             VALUES ($1, $2, $3, $4, 'pending') 
+             RETURNING *`,
+            [cloudinaryUrl, aiScore, lat, lng]
         );
-        stream.end(req.file.buffer);
-      });
-      imageUrl = uploadStream.secure_url;
-    } catch (err) {
-      console.log('Cloudinary upload error:', err.message);
-      imageUrl = 'https://via.placeholder.com/300?text=Upload+Error';
+        const savedData = newSubmission.rows[0];
+
+        // Notify Frontend
+        if (req.io) {
+            req.io.emit('new_submission', savedData);
+        }
+
+        res.status(201).json(savedData);
+
+    } catch (error) {
+        console.error("❌ Submission Error:", error);
+        res.status(500).json({ error: "Upload Failed" });
+    }
+};
+
+// -----------------------------------------------------
+// 2. PATCH /api/submissions/update-status (For Editors)
+// -----------------------------------------------------
+exports.updateStatus = async (req, res) => {
+    const { submission_id, status, note } = req.body;
+    
+    // Simple validation
+    if (!['approved', 'rejected'].includes(status)) {
+        return res.status(400).json({ error: "Invalid status provided." });
     }
 
-    // Insert into database
-    const query =
-      'INSERT INTO submissions (user_id, image_url, ai_score, lat, lng, created_at) VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING *';
-    const values = [userId, imageUrl, aiScore, lat, lng];
+    try {
+        const result = await db.query(
+            "UPDATE submissions SET status = $1, editor_note = $2, reviewed_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *",
+            [status, note, submission_id]
+        );
 
-    const result = await pool.query(query, values);
-    const submission = result.rows[0];
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Submission not found" });
+        }
 
-    // Emit Socket.io event
-    io.emit('new_submission', {
-      id: submission.id,
-      image_url: submission.image_url,
-      ai_score: submission.ai_score,
-      lat: submission.lat,
-      lng: submission.lng,
-      created_at: submission.created_at,
-      user_id: submission.user_id,
-    });
-
-    res.status(201).json({
-      message: 'Submission created successfully',
-      submission: submission,
-    });
-  } catch (error) {
-    console.error('Submission error:', error);
-    res.status(500).json({ error: error.message });
-  }
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error("Status Update Error:", error);
+        res.status(500).json({ error: "Could not update submission status." });
+    }
 };
-
-const getAll = async (req, res) => {
-  try {
-    const query =
-      'SELECT id, user_id, image_url, ai_score, lat, lng, created_at FROM submissions ORDER BY created_at DESC';
-    const result = await pool.query(query);
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Fetch error:', error);
-    res.status(500).json({ error: error.message });
-  }
-};
-
-module.exports = { create, getAll };
+// NOTE: We do not need a module.exports block here if we are exporting directly (which we are).
