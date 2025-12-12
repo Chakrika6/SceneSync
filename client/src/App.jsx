@@ -1,6 +1,22 @@
+<<<<<<< HEAD
 // client/src/App.jsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+=======
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+
+import { SocketProvider } from './context/SocketContext';
+import UserDashboard from "./pages/UserDashboard";
+import UserSignup from "./pages/UserSignup";
+import SelectLogin from "./pages/SelectLogin";
+import UserLogin from "./pages/UserLogin";
+import EditorLogin from "./pages/EditorLogin";
+import EditorDashboard from './pages/EditorDashboard';
+import SubmissionDetail from './pages/SubmissionDetail';
+import EditorLayout from "./components/editor/EditorLayout";
+import './index.css';
+>>>>>>> 5671bb78bc1cab305b563ae05c8b29691ae0cd57
 
 import { SocketProvider } from "./context/SocketContext";
 
@@ -31,6 +47,7 @@ import "./index.css";
 export default function App() {
   return (
     <SocketProvider>
+<<<<<<< HEAD
       <Router>
         <Routes>
           
@@ -41,6 +58,39 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
+=======
+      <Routes>
+
+        {/* HOME */}
+        <Route path="/" element={<SelectLogin />} />
+        <Route path="/user/dashboard" element={<UserDashboard />} />
+        <Route path="/user/task/:id/submit" element={<div>Submission Form Placeholder</div>} />
+        <Route path="/user/signup" element={<UserSignup />} />
+
+
+        {/* USER LOGIN */}
+        <Route path="/user/login" element={<UserLogin />} />
+
+        {/* EDITOR LOGIN */}
+        <Route path="/editor/login" element={<EditorLogin />} />
+
+        {/* EDITOR FLOW */}
+        <Route path="/editor/dashboard" element={<EditorDashboard />} />
+        <Route path="/editor/submission/:id" element={<SubmissionDetail />} />
+        <Route
+  path="/editor/dashboard"
+  element={
+    <EditorLayout>
+      <EditorDashboard />
+    </EditorLayout>
+  }
+/>
+
+        {/* FALLBACK */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+
+      </Routes>
+>>>>>>> 5671bb78bc1cab305b563ae05c8b29691ae0cd57
     </SocketProvider>
   );
 }

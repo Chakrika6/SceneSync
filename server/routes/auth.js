@@ -1,21 +1,17 @@
+// server/routes/auth.js
 const express = require('express');
-
 const router = express.Router();
 
-router.post('/login', (req, res) => {
-  res.json({
-    message: 'Login successful',
-    user: { id: 1, username: 'user' },
-    token: 'mock_token_12345',
-  });
-});
+// Import the controller functions
+const { editorLogin, userSignup, userLogin } = require('../controllers/authController');
 
-router.post('/signup', (req, res) => {
-  res.json({
-    message: 'Signup successful',
-    user: { id: 1, username: req.body.username || 'newuser' },
-    token: 'mock_token_12345',
-  });
-});
+// Editor Login Route
+router.post('/editor-login', editorLogin);
+
+// User Signup Route
+router.post('/user-signup', userSignup);
+
+// User Login Route
+router.post('/user-login', userLogin);
 
 module.exports = router;

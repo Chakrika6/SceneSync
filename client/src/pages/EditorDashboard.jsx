@@ -1,109 +1,116 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { MapViewer } from '../components/MapViewer';
-import axios from '../api/axios';
-import { SocketContext } from '../context/SocketContext';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from "react"; // <-- IMPORTED useEffect
+import PageContainer from "../components/ui/PageContainer";
+import TaskSidebar from "../components/editor/TaskSidebar";
+// --- NEW IMPORT ---
+import { getPendingSubmissions } from '../api/submissions'; 
+// Note: Manaswini must ensure this path is correct and the file exists!
+// ------------------
 
-export const EditorDashboard = () => {
-  const [submissions, setSubmissions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const socket = useContext(SocketContext);
+export default function EditorDashboard() {
+    // State to hold the data, loading status, and any errors
+    const [submissions, setSubmissions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Keeping existing state
 
-  useEffect(() => {
-    fetchSubmissions();
-  }, []);
+    // --- DATA FETCHING LOGIC ---
+    useEffect(() => {
+        const fetchSubmissions = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                // Call the API helper that uses the stored JWT token
+                const data = await getPendingSubmissions(); 
+                
+                // Assuming the backend returns an array of submissions directly
+                setSubmissions(data); 
 
-  useEffect(() => {
-    if (!socket) return;
+            } catch (err) {
+                // If the token is invalid or the fetch fails, set the error state
+                setError(err.message);
+                console.error("Dashboard Load Error:", err);
+                
+                // Optional: If the error is 'Authentication token not found', 
+                // Manaswini might want to navigate back to the login page here.
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    socket.on('new_submission', (data) => {
-      console.log('New submission received:', data);
-      setSubmissions((prev) => [data, ...prev]);
-    });
+        // Execute the fetch function when the component loads
+        fetchSubmissions();
+        
+    }, []); // Empty dependency array means this runs only once on mount
+    // --- END DATA FETCHING LOGIC ---
 
-    return () => {
-      socket.off('new_submission');
-    };
-  }, [socket]);
 
-  const fetchSubmissions = async () => {
-    try {
-      const response = await axios.get('/api/submissions');
-      setSubmissions(response.data);
-    } catch (error) {
-      console.error('Error fetching submissions:', error);
-    } finally {
-      setLoading(false);
+    // --- CONDITIONAL RENDERING FOR REVIEW PANEL CONTENT ---
+    let panelContent;
+    
+    if (loading) {
+        panelContent = <p className="text-blue-500 font-semibold">Loading Submissions...</p>;
+    } else if (error) {
+        panelContent = (
+            <div className="text-red-600 font-bold">
+                <p>Error loading reports: {error}</p>
+                <p className="text-sm font-normal mt-2">
+                    (Hint: Ensure the backend server is running and you are logged in correctly.)
+                </p>
+            </div>
+        );
+    } else if (submissions.length === 0) {
+        panelContent = <p className="text-gray-500">No new submissions pending review. Great job!</p>;
+    } else {
+        // Display the list of submissions fetched from the backend
+        panelContent = (
+            <div>
+                <h3 className="text-lg font-semibold mb-3">Incoming Reports ({submissions.length})</h3>
+                <ul className="space-y-3">
+                    {submissions.map((sub) => (
+                        <li 
+                            key={sub.id} 
+                            className="p-3 border border-gray-200 rounded-base hover:bg-gray-50 cursor-pointer"
+                            // FUTURE: Add onClick={() => navigate(`/editor/submission/${sub.id}`)}
+                        >
+                            <p className="font-medium text-gray-800">Submission ID: {sub.id}</p>
+                            <p className="text-sm text-gray-600">AI Score: <span className="font-semibold">{sub.ai_score}</span> | Status: {sub.status}</p>
+                            {/* Display image thumbnail here later */}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        );
     }
-  };
+    // --- END CONDITIONAL RENDERING ---
 
-  return (
-    <div className="min-h-screen flex bg-gray-100">
-      {/* Left Panel */}
-      <div className="w-1/3 bg-white p-6 overflow-y-auto shadow-md">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">
-          Editor Dashboard
-        </h1>
-        <p className="text-gray-600 text-sm mb-6">
-          {submissions.length} incident(s) reported
-        </p>
 
-        {loading ? (
-          <p className="text-gray-500">Loading reports...</p>
-        ) : submissions.length === 0 ? (
-          <p className="text-gray-500">No submissions yet</p>
-        ) : (
-          <div className="space-y-4">
-            {submissions.map((sub) => (
-              <div
-                key={sub.id}
-                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-gray-800">Report #{sub.id}</h3>
-                  <div
-                    className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${
-                      sub.ai_score >= 70
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-yellow-100 text-yellow-700'
-                    }`}
-                  >
-                    {sub.ai_score >= 70 ? (
-                      <CheckCircle2 size={14} />
-                    ) : (
-                      <AlertCircle size={14} />
-                    )}
-                    {sub.ai_score}% Trust
-                  </div>
+    return (
+        <PageContainer>
+            {/* Sidebar + Main Content Layout */}
+            <div className="flex w-full h-full">
+
+                {/* LEFT SIDEBAR */}
+                <TaskSidebar />
+
+                {/* RIGHT MAIN CONTENT */}
+                <div className="flex-1 p-8">
+                    <h1 className="text-3xl font-bold text-gray-800 mb-4">
+                        Editor Dashboard
+                    </h1>
+
+                    <p className="text-gray-600 mb-6">
+                        This is the workspace where editors manage tasks & view reports.
+                    </p>
+
+                    {/* Submission Review Panel - Now integrated with data */}
+                    <div className="mt-6 p-6 bg-white shadow-card rounded-base">
+                        <h2 className="text-xl font-semibold mb-4 border-b pb-2">Submission Review Panel</h2>
+                        
+                        {panelContent} 
+
+                    </div>
                 </div>
-
-                {sub.image_url && (
-                  <img
-                    src={sub.image_url}
-                    alt="Report"
-                    className="w-full h-40 object-cover rounded-lg mb-3"
-                  />
-                )}
-
-                <p className="text-xs text-gray-600">
-                  📍{' '}
-                  {sub.lat && sub.lng
-                    ? `${sub.lat.toFixed(4)}, ${sub.lng.toFixed(4)}`
-                    : 'No location'}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {new Date(sub.created_at).toLocaleString()}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Right Panel - Map */}
-      <div className="w-2/3">
-        <MapViewer submissions={submissions} />
-      </div>
-    </div>
-  );
-};
+            </div>
+        </PageContainer>
+    );
+}

@@ -1,8 +1,10 @@
 // client/src/api/submissions.js
+// COMBINED MASTER VERSION
+
 const API_BASE_URL = 'http://localhost:3001/api';
 
 // ----------------------------------------------------------------
-// 1. EDITOR: GET PENDING SUBMISSIONS (Manaswini's Code)
+// 1. EDITOR: GET PENDING SUBMISSIONS
 // ----------------------------------------------------------------
 export const getPendingSubmissions = async () => {
     const token = localStorage.getItem('editorToken');
@@ -26,7 +28,7 @@ export const getPendingSubmissions = async () => {
 };
 
 // ----------------------------------------------------------------
-// 2. USER: UPLOAD SUBMISSION (Sanjna's Fixed Logic)
+// 2. USER: UPLOAD SUBMISSION (Image + Audio + Description)
 // ----------------------------------------------------------------
 export const uploadSubmission = async (formData) => {
     const token = localStorage.getItem('userToken');
