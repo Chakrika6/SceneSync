@@ -8,37 +8,63 @@ export default function AudioRecorder({ onRecorded }) {
   const [audioURL, setAudioURL] = useState(null);
 
   useEffect(() => {
-    if (!navigator.mediaDevices || !window.MediaRecorder) setSupported(false);
+    if (!navigator.mediaDevices || !window.MediaRecorder) {
+      setSupported(false);
+      console.warn("AudioRecorder: not supported in this browser");
+    } else {
+      console.log("AudioRecorder: supported");
+    }
   }, []);
 
   async function start() {
     if (!supported) return;
+    console.log("AudioRecorder: start requested");
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mr = new MediaRecorder(stream);
     const chunks = [];
-    mr.ondataavailable = (e) => chunks.push(e.data);
+    mr.ondataavailable = (e) => {
+      if (e.data && e.data.size) chunks.push(e.data);
+    };
     mr.onstop = () => {
       const blob = new Blob(chunks, { type: 'audio/webm' });
       const url = URL.createObjectURL(blob);
       setAudioURL(url);
-      if (typeof onRecorded === 'function') onRecorded(blob);
-      // stop tracks
+      console.log("AudioRecorder: onstop, blob size", blob.size);
+      if (typeof onRecorded === 'function') {
+        try {
+          onRecorded(blob);
+          console.log("AudioRecorder: onRecorded(blob) called");
+        } catch (err) {
+          console.error("AudioRecorder: onRecorded threw:", err);
+        }
+      }
       stream.getTracks().forEach(t => t.stop());
     };
     mediaRecorderRef.current = mr;
     mr.start();
     setRecording(true);
+    console.log("AudioRecorder: recorder started");
   }
 
   function stop() {
     const mr = mediaRecorderRef.current;
-    if (mr && mr.state !== 'inactive') mr.stop();
+    if (mr && mr.state !== 'inactive') {
+      mr.stop();
+      console.log("AudioRecorder: stop called");
+    }
     setRecording(false);
   }
 
   function clear() {
     setAudioURL(null);
-    if (typeof onRecorded === 'function') onRecorded(null);
+    if (typeof onRecorded === 'function') {
+      try {
+        onRecorded(null);
+        console.log("AudioRecorder: onRecorded(null) called");
+      } catch (err) {
+        console.error("AudioRecorder: onRecorded(null) threw:", err);
+      }
+    }
   }
 
   if (!supported) return <div>Your browser does not support audio recording</div>;

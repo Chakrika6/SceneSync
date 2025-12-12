@@ -1,9 +1,13 @@
+// client/src/pages/UserHome.jsx
 import React, { useState } from "react";
 import CameraCapture from "../components/CameraCapture";
 import axios from "../api/axios";
 import { Send } from "lucide-react";
+// Note: This UserHome page has older upload logic compared to submit.jsx.
+// For the final app, consider making this link directly to /submit.
 
-export const UserHome = () => {
+// 🚨 FIX: Changed from 'export const UserHome' to 'export default function UserHome'
+export default function UserHome() {
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,6 +37,7 @@ export const UserHome = () => {
         formData,
         {
           headers: {
+            // Note: Axios automatically sets this for FormData, but keeping it won't hurt.
             "Content-Type": "multipart/form-data",
           },
         }
