@@ -1,59 +1,21 @@
-const axios = require('axios');
+// server/utils/vision.js (HACKATHON MOCK MODE)
+
+// You only need axios and dotenv for the structure, but the core logic is bypassed.
+const axios = require('axios'); 
 require('dotenv').config();
 
-const analyzeImage = async (buffer) => {
-  try {
-    const base64Image = buffer.toString('base64');
+exports.analyzeImage = async (fileBuffer) => {
+    // ⚠️ WARNING: The real Google AI is DISABLED due to API Key issues (403 error).
+    console.log("⚠️ FAKING AI SCORE: Returning a high relevance score to unblock the dashboard.");
+    
+    // Simulate a network delay (1 second) so the UI doesn't look instant/buggy
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const response = await axios.post(
-      `https://vision.googleapis.com/v1/images:annotate?key=${process.env.GOOGLE_API_KEY}`,
-      {
-        requests: [
-          {
-            image: {
-              content: base64Image,
-            },
-            features: [
-              {
-                type: 'LABEL_DETECTION',
-                maxResults: 10,
-              },
-              {
-                type: 'SAFE_SEARCH_DETECTION',
-              },
-            ],
-          },
-        ],
-      }
-    );
-
-    const result = response.data.responses[0];
-    const safeSearch = result.safeSearchAnnotation || {};
-
-    // Calculate AI trust score based on safe search
-    let trustScore = 100;
-    const likelyThreshold = { VERY_LIKELY: 20, LIKELY: 10, POSSIBLE: 5 };
-
-    ['adult', 'spoof', 'medical', 'violence'].forEach((category) => {
-      const likelihood = safeSearch[category] || 'UNKNOWN';
-      trustScore -= likelyThreshold[likelihood] || 0;
-    });
-
-    trustScore = Math.max(0, Math.min(100, trustScore));
-
+    // Return the required structure with a high, stable score
     return {
-      aiScore: trustScore,
-      labels: result.labelAnnotations || [],
-      safeSearch: safeSearch,
+        aiScore: 97, // Always return a high score (The Mock Value)
+        labels: [],
+        safeSearch: {},
     };
-  } catch (error) {
-    console.error('Vision API Error:', error.message);
-    return {
-      aiScore: 50,
-      labels: [],
-      safeSearch: {},
-    };
-  }
 };
-
-module.exports = { analyzeImage };
+// This function name MUST match your export in the controller!
