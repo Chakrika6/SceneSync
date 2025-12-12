@@ -9,6 +9,7 @@ import EditorLogin from "./pages/EditorLogin";
 import EditorDashboard from './pages/EditorDashboard';
 import SubmissionDetail from './pages/SubmissionDetail';
 import EditorLayout from "./components/editor/EditorLayout";
+import UserSignup from "./pages/UserSignup";
 import './index.css';
 
 function App() {
@@ -21,7 +22,7 @@ function App() {
 
         {/* USER LOGIN */}
         <Route path="/user/login" element={<UserLogin />} />
-
+        <Route path="/user/signup" element={<UserSignup />} />
         {/* EDITOR LOGIN */}
         <Route path="/editor/login" element={<EditorLogin />} />
 
