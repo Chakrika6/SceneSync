@@ -1,4 +1,4 @@
-// server/controllers/submissionController.js (Stable Version for Push)
+// server/controllers/submissionController.js (Updated for Dashboard Fetch)
 const { db } = require('../db'); 
 const { analyzeImage } = require('../utils/vision');
 const { uploadToCloudinary } = require('../utils/cloudinary');
@@ -77,7 +77,24 @@ exports.createSubmission = async (req, res) => {
 };
 
 // -----------------------------------------------------
-// UPDATE STATUS: PATCH /api/submissions/update-status (Must remain for router stability)
+// GET PENDING SUBMISSIONS: GET /api/submissions/pending (NEW FUNCTION)
+// -----------------------------------------------------
+exports.getPendingSubmissions = async (req, res) => {
+    // This function is only executed if the isEditor middleware passes.
+    try {
+        const result = await db.query(
+            "SELECT id, image_url, ai_score, created_at, lat, lng, status FROM submissions WHERE status = 'pending' ORDER BY created_at DESC"
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Error fetching pending submissions:", err);
+        res.status(500).json({ error: "Failed to fetch pending submissions" });
+    }
+};
+
+
+// -----------------------------------------------------
+// UPDATE STATUS: PATCH /api/submissions/update-status 
 // -----------------------------------------------------
 exports.updateStatus = async (req, res) => {
     const { id, status, editorNotes } = req.body;

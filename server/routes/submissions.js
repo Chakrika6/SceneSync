@@ -1,38 +1,36 @@
-// server/routes/submissions.js
-const express = require('express');
-const router = express.Router(); // <--- 1. Router object initialized
-const { db } = require('../db'); 
+// server/routes/submissions.js (Updated & Secured)
 
+const express = require('express');
+const router = express.Router();
+const { db } = require('../db'); 
 const upload = require('../middleware/upload'); 
 
-// Import the controller functions
-const { createSubmission, updateStatus } = require('../controllers/submissionController');
+// 1. IMPORT MIDDLEWARE
+const { isEditor } = require('../middleware/auth'); 
+
+// 2. IMPORT CONTROLLER FUNCTIONS
+const { 
+    createSubmission, 
+    updateStatus,
+    getPendingSubmissions // <--- NEW FUNCTION
+} = require('../controllers/submissionController');
+
 
 // -------------------------------------------------------------------
-// 1. UPLOAD PIPELINE
-// POST /api/submissions/upload (Used by the User Upload interface)
+// 1. UPLOAD PIPELINE (PUBLIC ROUTE)
 router.post('/upload', upload.single('image'), createSubmission);
 
+
 // -------------------------------------------------------------------
-// 2. EDITOR DASHBOARD ROUTES (Used by Manaswini)
+// 2. EDITOR DASHBOARD ROUTES (PROTECTED)
 
-// GET /api/submissions/pending (Required for EditorDashboard.jsx list)
-router.get('/pending', async (req, res) => {
-    try {
-        const result = await db.query(
-            "SELECT id, image_url, ai_score, created_at, lat, lng, status FROM submissions WHERE status = 'pending' ORDER BY created_at DESC"
-        );
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: "Failed to fetch pending submissions" });
-    }
-});
+// GET /api/submissions/pending 
+router.get('/pending', isEditor, getPendingSubmissions); // <--- NOW SECURED
 
-// GET /api/submissions/:id (Required for SubmissionDetail.jsx)
-router.get('/:id', async (req, res) => {
+// GET /api/submissions/:id (Detail view)
+router.get('/:id', isEditor, async (req, res) => { // <--- NOW SECURED
     const { id } = req.params;
     try {
-        // Fetch ALL columns for the detail view
         const result = await db.query('SELECT * FROM submissions WHERE id = $1', [id]);
         if (result.rows.length === 0) {
             return res.status(404).json({ error: "Submission not found" });
@@ -43,16 +41,14 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// PATCH /api/submissions/update-status (Required for ApproveRejectPanel.jsx)
-router.patch('/update-status', updateStatus);
+// PATCH /api/submissions/update-status (Approve/Reject)
+router.patch('/update-status', isEditor, updateStatus); // <--- NOW SECURED
 
-// Catch-all route to avoid 404s if someone hits the base URL
-router.get('/', async (req, res) => {
-    // Redirects to the pending list, which is the most common default
+// Catch-all
+router.get('/', isEditor, async (req, res) => { // <--- NOW SECURED
     return res.redirect('/api/submissions/pending'); 
 });
 
+
 // -------------------------------------------------------------------
-// 3. THE CRITICAL EXPORT LINE
-// This exports the router object to your index.js file
-module.exports = router; // <--- 2. Router object is exported
+module.exports = router;
