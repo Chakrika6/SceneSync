@@ -1,25 +1,33 @@
 import React from 'react';
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+
 import { SocketProvider } from './context/SocketContext';
-import { UserHome } from './pages/UserHome';
-import { EditorDashboard } from './pages/EditorDashboard';
+
+// Correct default imports
+import {UserHome} from './pages/UserHome';
+import EditorLogin from './pages/EditorLogin';
+import EditorDashboard from './pages/EditorDashboard';
+import SubmissionDetail from './pages/SubmissionDetail';
+
 import './index.css';
 
 function App() {
   return (
     <SocketProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<UserHome />} />
-          <Route path="/editor" element={<EditorDashboard />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
+      <Routes>
+
+        {/* USER ROUTE */}
+        <Route path="/" element={<UserHome />} />
+
+        {/* EDITOR ROUTES */}
+        <Route path="/editor/login" element={<EditorLogin />} />
+        <Route path="/editor/dashboard" element={<EditorDashboard />} />
+        <Route path="/editor/submission/:id" element={<SubmissionDetail />} />
+
+        {/* FALLBACK */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+
+      </Routes>
     </SocketProvider>
   );
 }
