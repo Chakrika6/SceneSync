@@ -1,24 +1,55 @@
 // client/src/api/submissions.js
-import axios from 'axios';
-const client = axios.create({ baseURL: '/', timeout: 120000 });
+const API_BASE_URL = 'http://localhost:3001/api';
 
-// Accepts either { file } OR { files } where files is Array<File>
-export async function uploadSubmission({ file, files, user_id }) {
-  const form = new FormData();
+// ----------------------------------------------------------------
+// 1. EDITOR: GET PENDING SUBMISSIONS (Manaswini's Code)
+// ----------------------------------------------------------------
+export const getPendingSubmissions = async () => {
+    const token = localStorage.getItem('editorToken');
+    if (!token) throw new Error("Authentication token not found. Please log in.");
 
-  if (files && files.length) {
-    files.forEach((f) => form.append('media', f, f.name)); // repeated field name 'media'
-  } else if (file) {
-    form.append('media', file, file.name);
-  } else {
-    throw new Error('No file provided');
-  }
+    try {
+        const response = await fetch(${API_BASE_URL}/submissions/pending, {
+            method: 'GET',
+            headers: {
+                'Authorization': Bearer ${token}, 
+                'Content-Type': 'application/json',
+            },
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Failed to fetch submissions.');
+        return data; 
+    } catch (error) {
+        console.error("Fetch Submissions Error:", error);
+        throw error;
+    }
+};
 
-  if (user_id) form.append('user_id', user_id);
+// ----------------------------------------------------------------
+// 2. USER: UPLOAD SUBMISSION (Sanjna's Fixed Logic)
+// ----------------------------------------------------------------
+export const uploadSubmission = async (formData) => {
+    const token = localStorage.getItem('userToken');
+    const headers = {};
+    
+    // Attach token if user is logged in
+    if (token) {
+        headers['Authorization'] = Bearer ${token};
+    }
 
-  const resp = await client.post('/api/submissions/upload', form, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
+    try {
+        const response = await fetch(${API_BASE_URL}/submissions/upload, {
+            method: 'POST',
+            headers: headers,
+            body: formData, // Browser automatically sets Content-Type to multipart/form-data
+        });
 
-  return resp.data;
-}
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Upload failed.');
+        return data; 
+
+    } catch (error) {
+        console.error("Upload API Error:", error);
+        throw error;
+    }
+};
