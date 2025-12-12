@@ -1,4 +1,4 @@
-// server/routes/submissions.js (Updated & Secured)
+// server/routes/submissions.js (Updated for Image + Audio)
 
 const express = require('express');
 const router = express.Router();
@@ -12,23 +12,27 @@ const { isEditor } = require('../middleware/auth');
 const { 
     createSubmission, 
     updateStatus,
-    getPendingSubmissions // <--- NEW FUNCTION
+    getPendingSubmissions 
 } = require('../controllers/submissionController');
 
 
 // -------------------------------------------------------------------
 // 1. UPLOAD PIPELINE (PUBLIC ROUTE)
-router.post('/upload', upload.single('image'), createSubmission);
+// Updated to accept both 'image' and 'audio' files
+router.post('/upload', upload.fields([
+    { name: 'image', maxCount: 1 }, // Required by controller
+    { name: 'audio', maxCount: 1 }  // Optional
+]), createSubmission);
 
 
 // -------------------------------------------------------------------
 // 2. EDITOR DASHBOARD ROUTES (PROTECTED)
 
 // GET /api/submissions/pending 
-router.get('/pending', isEditor, getPendingSubmissions); // <--- NOW SECURED
+router.get('/pending', isEditor, getPendingSubmissions); 
 
 // GET /api/submissions/:id (Detail view)
-router.get('/:id', isEditor, async (req, res) => { // <--- NOW SECURED
+router.get('/:id', isEditor, async (req, res) => { 
     const { id } = req.params;
     try {
         const result = await db.query('SELECT * FROM submissions WHERE id = $1', [id]);
@@ -42,10 +46,10 @@ router.get('/:id', isEditor, async (req, res) => { // <--- NOW SECURED
 });
 
 // PATCH /api/submissions/update-status (Approve/Reject)
-router.patch('/update-status', isEditor, updateStatus); // <--- NOW SECURED
+router.patch('/update-status', isEditor, updateStatus); 
 
 // Catch-all
-router.get('/', isEditor, async (req, res) => { // <--- NOW SECURED
+router.get('/', isEditor, async (req, res) => { 
     return res.redirect('/api/submissions/pending'); 
 });
 
