@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom';
 import { SocketProvider } from './context/SocketContext';
 import { UserHome } from './pages/UserHome';
+import Submit from './pages/submit';
 import { EditorDashboard } from './pages/EditorDashboard';
 import './index.css';
 
@@ -17,6 +18,7 @@ function App() {
         <Routes>
           <Route path="/" element={<UserHome />} />
           <Route path="/editor" element={<EditorDashboard />} />
+           <Route path="/submit" element={<Submit />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

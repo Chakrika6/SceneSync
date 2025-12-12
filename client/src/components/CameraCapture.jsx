@@ -1,51 +1,36 @@
-import React, { useState } from 'react';
-import { Camera } from 'lucide-react';
+// client/src/components/CameraCapture.jsx
+import React, { useRef } from "react";
 
-export const CameraCapture = ({ onCapture }) => {
-  const [preview, setPreview] = useState(null);
-  const [file, setFile] = useState(null);
+export default function CameraCapture({ onCapture }) {
+  const inputRef = useRef();
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result);
-      };
-      reader.readAsDataURL(selectedFile);
-      onCapture(selectedFile);
+  function handleChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (typeof onCapture === "function") {
+      onCapture(file);
+    } else {
+      console.warn("CameraCapture: onCapture missing");
     }
-  };
+  }
 
   return (
-    <div className="w-full max-w-md mx-auto p-4">
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50">
-        <label className="cursor-pointer flex flex-col items-center gap-2">
-          <Camera size={48} className="text-blue-500" />
-          <span className="text-sm font-medium text-gray-700">
-            Capture or Upload Image
-          </span>
-          <input
-            type="file"
-            capture="environment"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-        </label>
-      </div>
+    <div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleChange}
+        style={{ display: "none" }}
+      />
 
-      {preview && (
-        <div className="mt-4">
-          <img
-            src={preview}
-            alt="Preview"
-            className="w-full h-auto rounded-lg border border-gray-300"
-          />
-          <p className="text-xs text-gray-600 mt-2">{file.name}</p>
-        </div>
-      )}
+      <button
+        onClick={() => inputRef.current.click()}
+        className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+      >
+        Take / Upload Photo
+      </button>
     </div>
   );
-};
+}
