@@ -1,52 +1,21 @@
-// ApproveRejectPanel.jsx
-// Purpose: Approve or reject a submission. Calls backend PATCH /api/submissions/update-status
-import React, { useState } from "react";
-import axios from "axios";
+import { useState } from "react";
+import Button from "../components/ui/Button";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000/api";
-const api = axios.create({ baseURL: API_BASE });
-
-export default function ApproveRejectPanel({ submissionId, onSuccess }) {
-  const [loading, setLoading] = useState(false);
+export default function ApproveRejectPanel({ submissionId }) {
   const [note, setNote] = useState("");
 
-  async function updateStatus(status) {
-    if (!submissionId) return;
-    setLoading(true);
-    try {
-    
-      const res = await api.patch("/submissions/update-status", {
-        submission_id: submissionId,
-        status,
-        note: note || undefined,
-      });
-      alert("Submission updated: " + (res.data?.final_status || status));
-      if (typeof onSuccess === "function") onSuccess();
-      
-
-    } catch (err) {
-      console.error("Update failed:", err?.response?.data || err.message);
-      alert(err?.response?.data?.error || "Update failed");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
-    <div style={{ marginTop: 8 }}>
-      <div style={{ marginBottom: 8 }}>
-        <label style={{ display: "block", marginBottom: 4 }}>Optional note</label>
-        <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} style={{ width: "100%", padding: 8 }} />
-      </div>
+    <div>
+      <textarea
+        className="w-full border border-gray-300 rounded-base px-4 py-2 mb-4"
+        placeholder="Optional review note"
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+      />
 
-      <div style={{ display: "flex", gap: 8 }}>
-        <button onClick={() => updateStatus("approved")} disabled={loading} style={{ padding: "8px 12px" }}>
-          {loading ? "Updating..." : "Approve"}
-        </button>
-
-        <button onClick={() => updateStatus("rejected")} disabled={loading} style={{ padding: "8px 12px" }}>
-          {loading ? "Updating..." : "Reject"}
-        </button>
+      <div className="flex gap-4">
+        <Button variant="success">Approve</Button>
+        <Button variant="danger">Reject</Button>
       </div>
     </div>
   );

@@ -1,65 +1,35 @@
-// EditorDashboard.jsx
-// Purpose: Loads pending submissions from backend and shows them in a list.
-// Backend endpoint expected: GET /api/submissions/pending
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import SubmissionList from "./SubmissionList";
-
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000/api";
-const api = axios.create({ baseURL: API_BASE });
+import React, { useState } from "react";
+import PageContainer from "../components/ui/PageContainer";
+import TaskSidebar from "../components/editor/TaskSidebar";
 
 export default function EditorDashboard() {
-  const [submissions, setSubmissions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  async function loadPending() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.get("/submissions/pending");
-      // Expect res.data to be an array of submissions
-      setSubmissions(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      console.error("Failed to load pending submissions:", err?.response?.data || err.message);
-      setError("Failed to load submissions.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    setSubmissions([
-    {
-      id: "mock123",
-      user_id: "user1",
-      ai_relevance_score: 88,
-      storage_path: "https://via.placeholder.com/600",
-      created_at: new Date().toISOString()
-    }
-  ]);
-
-    loadPending();
-    // Optional: you can later add a polling interval or realtime subscription here
-  }, []);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Editor Dashboard</h2>
-      <p>Pending submissions are listed below. Click Review to see details.</p>
+    <PageContainer>
+      {/* Sidebar + Main Content Layout */}
+      <div className="flex w-full h-full">
 
-      <div style={{ margin: "12px 0" }}>
-        <button onClick={loadPending} disabled={loading} style={{ padding: "6px 12px" }}>
-          Refresh
-        </button>
+        {/* LEFT SIDEBAR */}
+        <TaskSidebar />
+
+        {/* RIGHT MAIN CONTENT */}
+        <div className="flex-1 p-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">
+            Editor Dashboard
+          </h1>
+
+          <p className="text-gray-600">
+            This is the workspace where editors manage tasks & view reports.
+          </p>
+
+          {/* Placeholder until backend connects */}
+          <div className="mt-6 p-6 bg-white shadow-card rounded-base">
+            <h2 className="text-xl font-semibold mb-2">Submission Review Panel</h2>
+            <p className="text-gray-500">Select a submission from incoming reports.</p>
+          </div>
+        </div>
       </div>
-
-      {loading && <p>Loading submissions...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      {!loading && submissions.length === 0 && <p>No pending submissions.</p>}
-
-      <SubmissionList submissions={submissions} />
-    </div>
+    </PageContainer>
   );
 }

@@ -3,12 +3,12 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 
 import { SocketProvider } from './context/SocketContext';
 
-// Correct default imports
-import {UserHome} from './pages/UserHome';
-import EditorLogin from './pages/EditorLogin';
+import SelectLogin from "./pages/SelectLogin";
+import UserLogin from "./pages/UserLogin";
+import EditorLogin from "./pages/EditorLogin";
 import EditorDashboard from './pages/EditorDashboard';
 import SubmissionDetail from './pages/SubmissionDetail';
-
+import EditorLayout from "./components/editor/EditorLayout";
 import './index.css';
 
 function App() {
@@ -16,13 +16,26 @@ function App() {
     <SocketProvider>
       <Routes>
 
-        {/* USER ROUTE */}
-        <Route path="/" element={<UserHome />} />
+        {/* HOME */}
+        <Route path="/" element={<SelectLogin />} />
 
-        {/* EDITOR ROUTES */}
+        {/* USER LOGIN */}
+        <Route path="/user/login" element={<UserLogin />} />
+
+        {/* EDITOR LOGIN */}
         <Route path="/editor/login" element={<EditorLogin />} />
+
+        {/* EDITOR FLOW */}
         <Route path="/editor/dashboard" element={<EditorDashboard />} />
         <Route path="/editor/submission/:id" element={<SubmissionDetail />} />
+        <Route
+  path="/editor/dashboard"
+  element={
+    <EditorLayout>
+      <EditorDashboard />
+    </EditorLayout>
+  }
+/>
 
         {/* FALLBACK */}
         <Route path="*" element={<Navigate to="/" replace />} />
