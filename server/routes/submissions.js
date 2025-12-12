@@ -1,7 +1,8 @@
 // server/routes/submissions.js
 const express = require('express');
 const router = express.Router(); // <--- 1. Router object initialized
-const db = require('../db'); 
+const { db } = require('../db'); 
+
 const upload = require('../middleware/upload'); 
 
 // Import the controller functions
