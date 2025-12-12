@@ -2,7 +2,8 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 import { SocketProvider } from './context/SocketContext';
-
+import UserDashboard from "./pages/UserDashboard";
+import UserSignup from "./pages/UserSignup";
 import SelectLogin from "./pages/SelectLogin";
 import UserLogin from "./pages/UserLogin";
 import EditorLogin from "./pages/EditorLogin";
@@ -18,6 +19,10 @@ function App() {
 
         {/* HOME */}
         <Route path="/" element={<SelectLogin />} />
+        <Route path="/user/dashboard" element={<UserDashboard />} />
+        <Route path="/user/task/:id/submit" element={<div>Submission Form Placeholder</div>} />
+        <Route path="/user/signup" element={<UserSignup />} />
+
 
         {/* USER LOGIN */}
         <Route path="/user/login" element={<UserLogin />} />
