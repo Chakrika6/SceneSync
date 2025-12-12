@@ -1,36 +1,57 @@
 // client/src/api/submissions.js
+// COMBINED MASTER VERSION
 
 const API_BASE_URL = 'http://localhost:3001/api';
 
+// ----------------------------------------------------------------
+// 1. EDITOR: GET PENDING SUBMISSIONS
+// ----------------------------------------------------------------
 export const getPendingSubmissions = async () => {
-    // 1. Retrieve the token saved during the successful login
     const token = localStorage.getItem('editorToken');
-
-    if (!token) {
-        throw new Error("Authentication token not found. Please log in.");
-    }
+    if (!token) throw new Error("Authentication token not found. Please log in.");
 
     try {
-        const response = await fetch(`${API_BASE_URL}/submissions/pending`, {
+        const response = await fetch(${API_BASE_URL}/submissions/pending, {
             method: 'GET',
             headers: {
-                // CRITICAL: Attach the token to authorize the request
-                'Authorization': `Bearer ${token}`, 
+                'Authorization': Bearer ${token}, 
                 'Content-Type': 'application/json',
             },
         });
-
-        // Check if the response failed (e.g., 401 Unauthorized)
-        if (!response.ok) {
-             const data = await response.json();
-            throw new Error(data.error || 'Failed to fetch submissions.');
-        }
-
         const data = await response.json();
-        return data; // Expected: An array of submission objects
-
+        if (!response.ok) throw new Error(data.error || 'Failed to fetch submissions.');
+        return data; 
     } catch (error) {
         console.error("Fetch Submissions Error:", error);
+        throw error;
+    }
+};
+
+// ----------------------------------------------------------------
+// 2. USER: UPLOAD SUBMISSION (Image + Audio + Description)
+// ----------------------------------------------------------------
+export const uploadSubmission = async (formData) => {
+    const token = localStorage.getItem('userToken');
+    const headers = {};
+    
+    // Attach token if user is logged in
+    if (token) {
+        headers['Authorization'] = Bearer ${token};
+    }
+
+    try {
+        const response = await fetch(${API_BASE_URL}/submissions/upload, {
+            method: 'POST',
+            headers: headers,
+            body: formData, // Browser automatically sets Content-Type to multipart/form-data
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Upload failed.');
+        return data; 
+
+    } catch (error) {
+        console.error("Upload API Error:", error);
         throw error;
     }
 };

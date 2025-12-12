@@ -1,44 +1,60 @@
-import React, { useState } from 'react';
-import { CameraCapture } from '../components/CameraCapture';
-import axios from '../api/axios';
-import { Send } from 'lucide-react';
+// client/src/pages/UserHome.jsx
+import React, { useState } from "react";
+import CameraCapture from "../components/CameraCapture";
+import axios from "../api/axios";
+import { Send } from "lucide-react";
+// Note: This UserHome page has older upload logic compared to submit.jsx.
+// For the final app, consider making this link directly to /submit.
 
-export const UserHome = () => {
+// 🚨 FIX: Changed from 'export const UserHome' to 'export default function UserHome'
+export default function UserHome() {
   const [file, setFile] = useState(null);
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
 
   const handleCapture = (capturedFile) => {
+    console.log("Captured File:", capturedFile);
     setFile(capturedFile);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) {
-      setMessage('Please capture or upload an image first');
+      setMessage("Please capture or upload an image first");
       return;
     }
 
     setLoading(true);
+    setMessage("");
+
     try {
       const formData = new FormData();
-      formData.append('image', file);
-      formData.append('user_id', '1');
+      formData.append("media", file); // <-- IMPORTANT (backend expects `media`)
+      formData.append("user_id", "1");
 
-      const response = await axios.post('/api/submissions/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await axios.post(
+        "/api/submissions/upload",
+        formData,
+        {
+          headers: {
+            // Note: Axios automatically sets this for FormData, but keeping it won't hurt.
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
-      setMessage('Report submitted successfully! ✓');
+      console.log("Upload Response:", response.data);
+
+      setMessage("Report submitted successfully! ✓");
       setFile(null);
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error) {
-      setMessage('Error submitting report: ' + error.message);
-    } finally {
-      setLoading(false);
+
+      setTimeout(() => setMessage(""), 3000);
+    } catch (err) {
+      console.error(err);
+      setMessage("Error submitting report.");
     }
+
+    setLoading(false);
   };
 
   return (
@@ -51,27 +67,45 @@ export const UserHome = () => {
           <p className="text-gray-600 mb-6">Report incidents in real-time</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Camera UI */}
             <CameraCapture onCapture={handleCapture} />
 
+            {/* PREVIEW */}
+            {file && (
+              <div className="mt-3">
+                <p className="text-sm text-gray-700">
+                  Selected: <strong>{file.name}</strong> (
+                  {(file.size / 1024 / 1024).toFixed(2)} MB)
+                </p>
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt="preview"
+                  className="w-full max-h-64 object-cover rounded-lg mt-2"
+                />
+              </div>
+            )}
+
+            {/* STATUS MESSAGE */}
             {message && (
               <div
                 className={`p-3 rounded-lg text-center text-sm font-medium ${
-                  message.includes('Error')
-                    ? 'bg-red-100 text-red-700'
-                    : 'bg-green-100 text-green-700'
+                  message.includes("Error")
+                    ? "bg-red-100 text-red-700"
+                    : "bg-green-100 text-green-700"
                 }`}
               >
                 {message}
               </div>
             )}
 
+            {/* SUBMIT BUTTON */}
             <button
               type="submit"
               disabled={!file || loading}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
             >
               <Send size={20} />
-              {loading ? 'Submitting...' : 'Submit Report'}
+              {loading ? "Submitting..." : "Submit Report"}
             </button>
           </form>
         </div>
