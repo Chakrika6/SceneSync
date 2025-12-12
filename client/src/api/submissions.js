@@ -11,10 +11,12 @@ export const getPendingSubmissions = async () => {
     if (!token) throw new Error("Authentication token not found. Please log in.");
 
     try {
-        const response = await fetch(${API_BASE_URL}/submissions/pending, {
+        // FIXED: Added backticks (`) below
+        const response = await fetch(`${API_BASE_URL}/submissions/pending`, {
             method: 'GET',
             headers: {
-                'Authorization': Bearer ${token}, 
+                // FIXED: Added backticks (`) below
+                'Authorization': `Bearer ${token}`, 
                 'Content-Type': 'application/json',
             },
         });
@@ -36,11 +38,13 @@ export const uploadSubmission = async (formData) => {
     
     // Attach token if user is logged in
     if (token) {
-        headers['Authorization'] = Bearer ${token};
+        // FIXED: Added backticks (`) below
+        headers['Authorization'] = `Bearer ${token}`;
     }
 
     try {
-        const response = await fetch(${API_BASE_URL}/submissions/upload, {
+        // FIXED: Added backticks (`) below
+        const response = await fetch(`${API_BASE_URL}/submissions/upload`, {
             method: 'POST',
             headers: headers,
             body: formData, // Browser automatically sets Content-Type to multipart/form-data

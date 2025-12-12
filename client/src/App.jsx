@@ -1,6 +1,7 @@
 // client/src/App.jsx
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+// KEEPING BrowserRouter as Router, Routes, Route, Navigate (from Updated upstream)
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"; 
 
 // Context Provider
 import { SocketProvider } from "./context/SocketContext";
@@ -11,31 +12,26 @@ import EditorLogin from "./pages/EditorLogin";
 import UserSignup from "./pages/UserSignup";
 import SelectLogin from "./pages/SelectLogin"; 
 import Submit from "./pages/submit";
-import SubmissionDetail from './pages/SubmissionDetail'; // From friend's branch
+import SubmissionDetail from './pages/SubmissionDetail'; // Used in Editor Flow
 
 // PRIVATE PAGES (Components should handle their own authentication)
-import UserHome from "./pages/UserHome";         // Your UserHome component
-import UserDashboard from "./pages/UserDashboard"; // Friend's UserDashboard component
+import UserHome from "./pages/UserHome";          // Your original Home
+import UserDashboard from "./pages/UserDashboard";  // Friend's Dashboard
 import EditorDashboard from './pages/EditorDashboard';
 
 // LAYOUTS/HELPERS
-import EditorLayout from "./components/editor/EditorLayout"; // From friend's branch
+import EditorLayout from "./components/editor/EditorLayout"; 
 import PrivateRoute from "./components/PrivateRoute"; // Assuming you have this for auth
 import EditorRoute from "./components/EditorRoute";   // Assuming you have this for editor auth
 
 import "./index.css";
 
-/**
- * Integrated Routing Structure:
- * - Uses <Router> (BrowserRouter) for proper navigation.
- * - Uses friend's new path names (e.g., /user/login, /editor/dashboard).
- * - Uses your existing UserHome and EditorDashboard.
- * - Uses PrivateRoute and EditorRoute for protection.
- */
+
 export default function App() {
   return (
     <SocketProvider>
-      <Router> {/* Re-introduced BrowserRouter */}
+      {/* Re-introducing the required Router component */}
+      <Router> 
         <Routes>
 
           {/* Root/Landing Page */}
@@ -49,14 +45,15 @@ export default function App() {
           <Route path="/user/task/:id/submit" element={<div>Submission Form Placeholder</div>} />
 
           {/* User Private Routes (Protected by PrivateRoute) */}
-          {/* Note: /user/dashboard is the path from friend's branch. /home is also kept for safety. */}
           <Route element={<PrivateRoute />}>
+            {/* Keeping both paths for flexibility */}
             <Route path="/home" element={<UserHome />} /> 
             <Route path="/user/dashboard" element={<UserDashboard />} />
           </Route>
 
           {/* Editor Private Routes (Protected by EditorRoute) */}
           <Route element={<EditorRoute />}>
+            {/* Editor Dashboard - Using the Layout component */}
             <Route 
               path="/editor/dashboard" 
               element={
@@ -65,7 +62,15 @@ export default function App() {
                 </EditorLayout>
               } 
             />
-            <Route path="/editor/submission/:id" element={<SubmissionDetail />} />
+            {/* Editor Submission Detail - Using the Layout component */}
+            <Route 
+              path="/editor/submission/:id" 
+              element={
+                <EditorLayout>
+                  <SubmissionDetail />
+                </EditorLayout>
+              } 
+            />
           </Route>
 
           {/* FALLBACK: Redirects to the login selection page */}

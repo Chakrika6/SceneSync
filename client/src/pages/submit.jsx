@@ -142,7 +142,7 @@ export default function SubmitPage() {
             <button 
                 onClick={handleUpload} 
                 disabled={uploading} 
-                className={w-full py-3 rounded-xl text-white font-bold ${uploading ? "bg-indigo-400" : "bg-indigo-600 hover:bg-indigo-700"}}
+                className={`w-full py-3 rounded-xl text-white font-bold ${uploading ? "bg-indigo-400" : "bg-indigo-600 hover:bg-indigo-700"}`}
             >
                 {uploading ? "Uploading..." : "Submit Report"}
             </button>
