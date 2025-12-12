@@ -9,7 +9,8 @@ import EditorLogin from "./pages/EditorLogin";
 import EditorDashboard from './pages/EditorDashboard';
 import SubmissionDetail from './pages/SubmissionDetail';
 import EditorLayout from "./components/editor/EditorLayout";
-import UserSignup from "./pages/UserSignup";
+import UserDashboard from "./pages/UserDashboard";
+// import UserSignup from "./pages/UserSignup";
 import './index.css';
 
 function App() {
@@ -22,9 +23,12 @@ function App() {
 
         {/* USER LOGIN */}
         <Route path="/user/login" element={<UserLogin />} />
-        <Route path="/user/signup" element={<UserSignup />} />
+       {/* <Route path="/user/signup" element={<UserSignup />} /> */}
         {/* EDITOR LOGIN */}
         <Route path="/editor/login" element={<EditorLogin />} />
+        <Route path="/user/dashboard" element={<UserDashboard />} />
+<Route path="/user/task/:id/submit" element={<div>Submission Form Placeholder</div>} />
+
 
         {/* EDITOR FLOW */}
         <Route path="/editor/dashboard" element={<EditorDashboard />} />
