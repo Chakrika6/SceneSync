@@ -22,6 +22,7 @@ const submissionRoutes = require('./routes/submissions');
 const authRoutes = require('./routes/auth');
 const taskRoutes = require('./routes/tasks'); // <-- ADDED: Import the Task routes
 
+app.use('/api/tasks', taskRoutes); // <--- Crashes here if taskRoutes is undefined
 
 // Use Routes Middleware
 app.use('/api/submissions', submissionRoutes);

@@ -1,9 +1,9 @@
-@tailwind base;
+/* @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* small global reset */
-* { box-sizing: border-box; }
+/* { box-sizing: border-box; }
 html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
 @layer components {
@@ -17,4 +17,50 @@ html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   .preview-item img, .preview-item video { @apply w-full h-28 object-cover rounded-lg; }
   @screen sm { .previews { grid-template-columns: repeat(2, minmax(0,1fr)); } }
   @screen md { .previews { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+} */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* GLOBAL THEME OVERRIDES 
+   This applies the "Soft Modern" look to raw HTML elements
+*/
+
+@layer base {
+  body {
+    /* 1. Global Soft Background */
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+
+  /* 2. Make all Headings look tighter */
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight font-bold text-gray-900;
+  }
+}
+
+@layer components {
+  /* 3. BUTTON HIJACK
+     If your components use a generic <button> tag or basic classes,
+     this will force them to look like the "Soft Modern" pills.
+  */
+  button {
+    @apply transition-transform active:scale-95 duration-200 ease-in-out;
+  }
+  
+  /* Target buttons that look like primary actions */
+  .btn-primary, button[class*="bg-blue"], button[class*="bg-indigo"] {
+    @apply shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 rounded-xl !important;
+  }
+
+  /* 4. CARD HIJACK 
+     If you have a div with 'bg-white' and 'shadow', verify it looks like a soft card
+  */
+  .card, div[class*="bg-white"][class*="shadow"] {
+    @apply rounded-2xl border border-white/50 shadow-xl shadow-gray-200/50 !important;
+  }
+
+  /* 5. INPUT HIJACK */
+  input[type="text"], input[type="email"], input[type="password"], textarea {
+    @apply rounded-xl border-gray-200 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all !important;
+  }
 }

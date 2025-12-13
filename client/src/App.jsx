@@ -80,30 +80,116 @@
 //   );
 // }
 // client/src/App.jsx
-import React from "react";
-// 🛑 IMPORTANT: Only import what you use.
-import { Routes, Route, Navigate } from "react-router-dom"; 
+// import React from "react";
+// // 🛑 IMPORTANT: Only import what you use.
+// import { Routes, Route, Navigate } from "react-router-dom"; 
 
-// Context Provider
+// // Context Provider
+// import { SocketProvider } from "./context/SocketContext";
+
+// // PUBLIC PAGES
+// import UserLogin from "./pages/UserLogin";
+// import EditorLogin from "./pages/EditorLogin";
+// import UserSignup from "./pages/UserSignup";
+// import SelectLogin from "./pages/SelectLogin"; 
+
+// // PRIVATE PAGES 
+// import UserHome from "./pages/UserHome"; 
+// import UserDashboard from "./pages/UserDashboard"; 
+// import Submit from "./pages/submit"; // Moved here because it requires Auth
+// import EditorDashboard from './pages/EditorDashboard';
+// import SubmissionDetail from './pages/SubmissionDetail';
+
+// // LAYOUTS/HELPERS
+// import EditorLayout from "./components/editor/EditorLayout"; 
+// import PrivateRoute from "./components/PrivateRoute"; 
+// import EditorRoute from "./components/EditorRoute"; 
+
+// import "./index.css";
+
+// export default function App() {
+//   return (
+//     <SocketProvider>
+//       <Routes>
+
+//         {/* --- Root/Landing Page --- */}
+//         <Route path="/" element={<SelectLogin />} />
+
+//         {/* --- Public Authentication --- */}
+//         <Route path="/user/login" element={<UserLogin />} />
+//         <Route path="/user/signup" element={<UserSignup />} />
+//         <Route path="/editor/login" element={<EditorLogin />} />
+
+//         {/* --- User Private Routes (Must be logged in) --- */}
+//         <Route element={<PrivateRoute />}>
+//           <Route path="/home" element={<UserHome />} /> 
+//           <Route path="/user/dashboard" element={<UserDashboard />} />
+          
+//           {/* Moved Submit here! 
+//             We use a generic path because we pass the specific Task ID 
+//             via React Router 'state' (from your TaskCard).
+//           */}
+//           <Route path="/submit" element={<Submit />} />
+//         </Route>
+
+//         {/* --- Editor Private Routes (Must be an Editor) --- */}
+//         <Route element={<EditorRoute />}>
+          
+//           {/* Editor Dashboard */}
+//           <Route 
+//             path="/editor/dashboard" 
+//             element={
+//               <EditorLayout>
+//                 <EditorDashboard />
+//               </EditorLayout>
+//             } 
+//           />
+          
+//           {/* Editor Submission Detail */}
+//           <Route 
+//             path="/editor/submission/:id" 
+//             element={
+//               <EditorLayout>
+//                 <SubmissionDetail />
+//               </EditorLayout>
+//             } 
+//           />
+//         </Route>
+
+//         {/* --- Fallback: Redirect unknown URLs to home --- */}
+//         <Route path="*" element={<Navigate to="/" replace />} />
+
+//       </Routes>
+//     </SocketProvider>
+//   );
+// }
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+
+// Context
 import { SocketProvider } from "./context/SocketContext";
 
 // PUBLIC PAGES
+import SelectLogin from "./pages/SelectLogin";
 import UserLogin from "./pages/UserLogin";
-import EditorLogin from "./pages/EditorLogin";
 import UserSignup from "./pages/UserSignup";
-import SelectLogin from "./pages/SelectLogin"; 
+import EditorLogin from "./pages/EditorLogin";
 
-// PRIVATE PAGES 
-import UserHome from "./pages/UserHome"; 
-import UserDashboard from "./pages/UserDashboard"; 
-import Submit from "./pages/submit"; // Moved here because it requires Auth
-import EditorDashboard from './pages/EditorDashboard';
-import SubmissionDetail from './pages/SubmissionDetail';
+// USER PAGES (PRIVATE)
+import UserHome from "./pages/UserHome";
+import UserDashboard from "./pages/UserDashboard";
+import Submit from "./pages/submit";
 
-// LAYOUTS/HELPERS
-import EditorLayout from "./components/editor/EditorLayout"; 
-import PrivateRoute from "./components/PrivateRoute"; 
-import EditorRoute from "./components/EditorRoute"; 
+// EDITOR PAGES (PRIVATE)
+import EditorDashboard from "./pages/EditorDashboard";
+import SubmissionDetail from "./pages/SubmissionDetail";
+
+// ROUTE GUARDS
+import PrivateRoute from "./components/PrivateRoute";
+import EditorRoute from "./components/EditorRoute";
+
+// LAYOUTS
+import EditorLayout from "./components/editor/EditorLayout";
 
 import "./index.css";
 
@@ -112,54 +198,45 @@ export default function App() {
     <SocketProvider>
       <Routes>
 
-        {/* --- Root/Landing Page --- */}
+        {/* ---------------- PUBLIC ROUTES ---------------- */}
         <Route path="/" element={<SelectLogin />} />
-
-        {/* --- Public Authentication --- */}
         <Route path="/user/login" element={<UserLogin />} />
         <Route path="/user/signup" element={<UserSignup />} />
         <Route path="/editor/login" element={<EditorLogin />} />
 
-        {/* --- User Private Routes (Must be logged in) --- */}
+        {/* ---------------- USER PRIVATE ROUTES ---------------- */}
         <Route element={<PrivateRoute />}>
-          <Route path="/home" element={<UserHome />} /> 
+          <Route path="/home" element={<UserHome />} />
           <Route path="/user/dashboard" element={<UserDashboard />} />
-          
-          {/* Moved Submit here! 
-            We use a generic path because we pass the specific Task ID 
-            via React Router 'state' (from your TaskCard).
-          */}
           <Route path="/submit" element={<Submit />} />
         </Route>
 
-        {/* --- Editor Private Routes (Must be an Editor) --- */}
+        {/* ---------------- EDITOR PRIVATE ROUTES ---------------- */}
         <Route element={<EditorRoute />}>
-          
-          {/* Editor Dashboard */}
-          <Route 
-            path="/editor/dashboard" 
+          <Route
+            path="/editor/dashboard"
             element={
               <EditorLayout>
                 <EditorDashboard />
               </EditorLayout>
-            } 
+            }
           />
-          
-          {/* Editor Submission Detail */}
-          <Route 
-            path="/editor/submission/:id" 
+
+          <Route
+            path="/editor/submission/:id"
             element={
               <EditorLayout>
                 <SubmissionDetail />
               </EditorLayout>
-            } 
+            }
           />
         </Route>
 
-        {/* --- Fallback: Redirect unknown URLs to home --- */}
+        {/* ---------------- FALLBACK ---------------- */}
         <Route path="*" element={<Navigate to="/" replace />} />
 
       </Routes>
     </SocketProvider>
   );
 }
+
